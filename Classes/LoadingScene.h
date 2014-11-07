@@ -33,6 +33,8 @@ public:
     virtual void update(float dt);
     
     void loadingcallback();
+    
+    void plistimagecallback(Texture2D* texture);
 };
 
 #endif /* defined(__PlaneDemo__LoadingScene__) */

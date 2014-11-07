@@ -49,6 +49,14 @@ cocos2d::Scene* LoadingScene::LodingSceneCreate()
     
     scheduleUpdate();
     
+    // 预加载资源planelist
+    SpriteFrameCache* cache = SpriteFrameCache::getInstance();
+    cache->addSpriteFramesWithFile("planelist.plist", "planelist.png");
+    
+    // 预加载资源music
+    SimpleAudioEngine::getInstance()->preloadBackgroundMusic("diqiuyi.mp3");
+    SimpleAudioEngine::getInstance()->preloadEffect("bulletvoice.mp3");
+
     return true;
 };
 
@@ -63,10 +71,16 @@ cocos2d::Scene* LoadingScene::LodingSceneCreate()
     }
     else
     {
-        Director::getInstance()->replaceScene(HelloWorld::createScene());
+//        Director::getInstance()->replaceScene(HelloWorld::createScene());
+        Director::getInstance()->pushScene(HelloWorld::createScene());
     }
 };
 /*virtual*/ void LoadingScene::loadingcallback()
 {
     CCLOG("loading ok.");
+};
+
+void LoadingScene::plistimagecallback(Texture2D* texture)
+{
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("planelist.plist", texture);
 };

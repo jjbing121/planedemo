@@ -31,7 +31,7 @@ bool HelloWorld::init()
     Size globalsize = Director::getInstance()->getWinSize();
     
     // 背景音乐
-//    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("diqiuyi.mp3");
+    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("diqiuyi.mp3");
     
     // 背景图
     Sprite* bg = Sprite::create("paperbg.png");
