@@ -22,6 +22,8 @@ class LoadingScene : public cocos2d::Layer
 private:
     ProgressTimer* ptimer;
     
+    Vector<Sprite*> SpriteArray; // 预先加载精灵列表 SpriteArray
+    
 public:
     static cocos2d::Scene* LodingSceneCreate();
     

@@ -57,6 +57,28 @@ cocos2d::Scene* LoadingScene::LodingSceneCreate()
     SimpleAudioEngine::getInstance()->preloadBackgroundMusic("diqiuyi.mp3");
     SimpleAudioEngine::getInstance()->preloadEffect("bulletvoice.mp3");
 
+    // 自身飞机
+    Sprite* selfplane = Sprite::create("PaperPlane.png");
+    selfplane->setPosition(loading_size.width/2, 0);
+    selfplane->setAnchorPoint(Vec2(0.5, 0.5));
+    MoveBy* selfintoscene = MoveBy::create(1, Vec2(0, loading_size.height/8));
+    selfplane->runAction(selfintoscene);
+    SpriteArray.pushBack(selfplane);
+    // 子弹加载
+    Sprite* selfbullet = Sprite::create("bullet1.png");
+    selfbullet->setPosition(selfplane->getPosition());
+    selfbullet->setAnchorPoint(Vec2(0.5, 0.5));
+    SpriteArray.pushBack(selfbullet);
+    // 敌机加载
+    for (int i=0; i<10; i++) {
+        Sprite* enemytmp = Sprite::create("LXPlane.png");
+        enemytmp->setPosition(loading_size.width/2, loading_size.height+200);
+        enemytmp->setAnchorPoint(Vec2(0.5, 0.5));
+        Sequence* enemy_action = Sequence::create(RotateBy::create(0.1, 180), MoveTo::create(3, Vec2(loading_size.width/2, loading_size.height-1200)), NULL);
+        enemytmp->runAction(enemy_action);
+        SpriteArray.pushBack(enemytmp);
+    }
+
     return true;
 };
 
@@ -64,15 +86,15 @@ cocos2d::Scene* LoadingScene::LodingSceneCreate()
 {
     float percent_get = ptimer->getPercentage();
     
-    percent_get += 0.5f;
+    percent_get += 5;
     
     if (percent_get <= 100) {
         ptimer->setPercentage(percent_get);
     }
     else
     {
-//        Director::getInstance()->replaceScene(HelloWorld::createScene());
-        Director::getInstance()->pushScene(HelloWorld::createScene());
+        
+        Director::getInstance()->replaceScene(HelloWorld::createScene(SpriteArray));
     }
 };
 /*virtual*/ void LoadingScene::loadingcallback()

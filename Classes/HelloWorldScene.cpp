@@ -2,17 +2,17 @@
 
 USING_NS_CC;
 
-Scene* HelloWorld::createScene()
+cocos2d::Scene* HelloWorld::createScene(Vector<Sprite*> getTransportArray)
 {
     // 'scene' is an autorelease object
     auto scene = Scene::create();
     
     // 'layer' is an autorelease object
-    auto layer = HelloWorld::create();
+    auto layer = HelloWorld::create(getTransportArray);
 
     // add layer as a child to scene
     scene->addChild(layer);
-
+    
     // return the scene
     return scene;
 }
@@ -27,8 +27,10 @@ bool HelloWorld::init()
         return false;
     }
     
-
     Size globalsize = Director::getInstance()->getWinSize();
+    
+    // notification center callback
+    CCLOG("gettransportarray -> %d", (int)prelog_sprite_list.size());
     
     // 背景音乐
     CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("diqiuyi.mp3");
@@ -40,24 +42,13 @@ bool HelloWorld::init()
     this->addChild(bg);
     
     // 纸飞机
-    s = Sprite::create("PaperPlane.png");
-    s->setPosition(globalsize.width/2, globalsize.height/2);
-    s->setAnchorPoint(Vec2(0.5,0.5));
-    this->addChild(s);
+    this->addChild(prelog_sprite_list.at(0));
+    // 子弹
+    this->addChild(prelog_sprite_list.at(1));
     
     // 敌机
-    enemy = Sprite::create("LXPlane.png");
-    enemy->setPosition(globalsize.width/2, globalsize.height+200);
-    enemy->setAnchorPoint(Vec2(0.5,0.5));
-    Sequence* enemy_action = Sequence::create(RotateBy::create(0.1, 180), MoveTo::create(3, Vec2(globalsize.width/2, globalsize.height-1200)), NULL);
-    enemy->runAction(enemy_action);
-    this->addChild(enemy);
-    
-    // 子弹
-    bullet = Sprite::create("bullet1.png");
-    bullet->setPosition(s->getPosition());
-    bullet->setAnchorPoint(Vec2(0.5,0.5));
-    this->addChild(bullet);
+    j=2;
+    schedule(schedule_selector(HelloWorld::load_enemy), 2);
     
     // 记分板
     boardl = Label::createWithSystemFont("0", "Courier", 45);
@@ -72,18 +63,18 @@ bool HelloWorld::init()
     listener->onTouchBegan = CC_CALLBACK_2(HelloWorld::onTouchBegan, this);
     listener->onTouchMoved = CC_CALLBACK_2(HelloWorld::onTouchMoved, this);
     listener->onTouchEnded = CC_CALLBACK_2(HelloWorld::onTouchEnded, this);
-    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, prelog_sprite_list.at(0));
 
-    schedule(schedule_selector(HelloWorld::bulletshoot), 0.5f);
-    schedule(schedule_selector(HelloWorld::updatebullet));
-    schedule(schedule_selector(HelloWorld::updateplane), 0.5f);
+    schedule(schedule_selector(HelloWorld::bulletshoot), 0.5f);  // 设置子弹射速
+    schedule(schedule_selector(HelloWorld::updatebullet));       // 设置子弹碰撞
+    schedule(schedule_selector(HelloWorld::updateplane), 0.5f);  // 设置飞机碰撞
     
     return true;
 }
 
 /*virtual*/ bool HelloWorld::onTouchBegan(Touch *t, Event *e)
 {
-    if (s->getBoundingBox().containsPoint(t->getLocation())) {
+    if (prelog_sprite_list.at(0)->getBoundingBox().containsPoint(t->getLocation())) {
         return true;
     }
     return false;
@@ -91,8 +82,8 @@ bool HelloWorld::init()
 
 /*virtual*/ void HelloWorld::onTouchMoved(Touch *t, Event *e)
 {
-    if (s!=NULL) {
-        s->setPosition(Vec2(t->getLocation().x, t->getLocation().y));
+    if (prelog_sprite_list.at(0)!=NULL) {
+        prelog_sprite_list.at(0)->setPosition(Vec2(t->getLocation().x, t->getLocation().y));
     }
 };
 
@@ -103,42 +94,85 @@ bool HelloWorld::init()
 
 /*virtual*/ void HelloWorld::bulletshoot(float directime)
 {
-    if (bullet!=NULL && s!=NULL) {
-        bullet->setPosition(s->getPosition());
-        MoveTo* bullet_mv = MoveTo::create(0.5, bullet->getPosition()+Vec2(0,200));
-        bullet->runAction(bullet_mv);
+    if (prelog_sprite_list.at(1) && prelog_sprite_list.at(0)) {
+        prelog_sprite_list.at(1)->setPosition(prelog_sprite_list.at(0)->getPosition());
+        MoveTo* bullet_mv = MoveTo::create(0.5, prelog_sprite_list.at(1)->getPosition()+Vec2(0,200));
+        prelog_sprite_list.at(1)->runAction(bullet_mv);
 //        CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("bulletvoice.wav");
     }
 }
 /*virtual*/ void HelloWorld::updatebullet(float directime)
 {
-    if (bullet!=NULL && enemy!=NULL && bullet->getBoundingBox().intersectsRect(enemy->getBoundingBox())) {
-        CCLOG("bounding box ok.");
-        FadeOut* enemy_out = FadeOut::create(1);
-        enemy->runAction(enemy_out);
-        enemy->stopAllActions();
-        enemy->removeFromParentAndCleanup(true);
-        enemy=NULL;
-        int tmpmath = atoi(boardl->getString().c_str());
-        char gmath[6];
-        memset(gmath, 0, 6);
-        sprintf(gmath, "%d", tmpmath+100);
-        boardl->setString(gmath);
+    for (int i=2; i<prelog_sprite_list.size(); i++) {
+        
+        if (prelog_sprite_list.at(i)) {
+            
+            if (prelog_sprite_list.at(1) && prelog_sprite_list.at(i)!=NULL && prelog_sprite_list.at(1)->getBoundingBox().intersectsRect(prelog_sprite_list.at(i)->getBoundingBox())) {
+                CCLOG("bounding box ok.");
+                FadeOut* enemy_out = FadeOut::create(1);
+                prelog_sprite_list.at(i)->runAction(enemy_out);
+                prelog_sprite_list.at(i)->stopAllActions();
+                prelog_sprite_list.at(i)->removeFromParentAndCleanup(true);
+//                prelog_sprite_list.at(i)=NULL;
+                prelog_sprite_list.erase(i);
+                int tmpmath = atoi(boardl->getString().c_str());
+                char gmath[6];
+                memset(gmath, 0, 6);
+                sprintf(gmath, "%d", tmpmath+100);
+                boardl->setString(gmath);
+            }
+        }
     }
 };
 
 /*virtual*/ void HelloWorld::updateplane(float directime)
 {
-    if (s!=NULL && enemy!=NULL && s->getBoundingBox().intersectsRect(enemy->getBoundingBox())) {
-        CCLOG("plane touched.");
-        Hide* plane_action = Hide::create();
-        s->runAction(plane_action);
+    for (int i=2; i<prelog_sprite_list.size(); i++) {
+        
+        if (prelog_sprite_list.at(i)) {
+            
+            if (prelog_sprite_list.at(0) && prelog_sprite_list.at(i)!=NULL && prelog_sprite_list.at(0)->getBoundingBox().intersectsRect(prelog_sprite_list.at(i)->getBoundingBox())) {
+                CCLOG("plane touched.");
+                Hide* plane_action = Hide::create();
+                prelog_sprite_list.at(0)->runAction(plane_action);
 
-        s->stopAllActions();
-        s->removeFromParentAndCleanup(true);
-        s=NULL;
-        bullet->stopAllActions();
-        bullet->removeFromParentAndCleanup(true);
-        bullet=NULL;
+                prelog_sprite_list.at(0)->stopAllActions();
+                prelog_sprite_list.at(0)->removeFromParentAndCleanup(true);
+                //        prelog_sprite_list.at(0)=NULL;
+                prelog_sprite_list.erase(0);
+                prelog_sprite_list.at(1)->stopAllActions();
+                prelog_sprite_list.at(1)->removeFromParentAndCleanup(true);
+                //        prelog_sprite_list.at(1)=NULL;
+                prelog_sprite_list.erase(1);
+            }
+        }
     }
+}
+
+HelloWorld* HelloWorld::create(Vector<Sprite*> getSpriteArray)
+{
+    HelloWorld* pRet = new HelloWorld();
+    pRet->prelog_sprite_list = getSpriteArray;
+    pRet->loadlog_sprite_list.operator=(getSpriteArray);
+    if (pRet && pRet->init())
+    {
+        pRet->autorelease();
+        return pRet;
+    }
+    else
+    {
+        delete pRet;
+        pRet = NULL;
+        return NULL;
+    }
+}
+
+void HelloWorld::load_enemy(float addtime)
+{
+    CCLOG("j => %d, size => %d, newsize => %d", j, (int)prelog_sprite_list.size(), (int)loadlog_sprite_list.size());
+    if (j<loadlog_sprite_list.size()) {
+        this->addChild(loadlog_sprite_list.at(j));
+        j++;
+    }
+    
 }
