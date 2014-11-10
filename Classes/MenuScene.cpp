@@ -36,7 +36,7 @@ Scene* MenuScene::MenuSceneCreate()
     this->addChild(menubg);
 
     // menu背景音乐
-//    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("menumusic.mp3");
+    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("menumusic.mp3");
 
     // menu开始游戏键
     Label* startbutton = Label::createWithSystemFont("开始游戏", "Courier", 38);
@@ -74,9 +74,10 @@ Scene* MenuScene::MenuSceneCreate()
         Hide* hide_action = Hide::create();
         menubutton_start->runAction(hide_action);
         menubutton_after->runAction(show_action);
-        CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("buttonclick.wav");
         
-        Director::getInstance()->replaceScene(TransitionFadeBL::create(1, LoadingScene::LodingSceneCreate()));
+        CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("buttonclick.wav");
+    
+        Director::getInstance()->replaceScene(LoadingScene::LodingSceneCreate());
         return true;
     }
     return false;

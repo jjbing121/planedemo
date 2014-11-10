@@ -3,6 +3,9 @@
 
 #include "cocos2d.h"
 #include <SimpleAudioEngine.h>
+#include "ResultScene.h"
+
+
 using namespace cocos2d;
 using namespace CocosDenshion;
 
@@ -10,7 +13,12 @@ class HelloWorld : public cocos2d::Layer
 {
 private:
     int j;
-    Label* boardl;
+    
+    Size globalsize;
+    Sprite* bg;
+    Sprite* boom;
+    Sprite* UserPlane;
+    Label* boomcount;
     
     Vector<Sprite*> prelog_sprite_list;  // 预加载的资源内容
     Vector<Sprite*> loadlog_sprite_list; // 正式的加载资源内容
@@ -36,6 +44,8 @@ public:
     virtual bool onTouchBegan(Touch *t, Event *e);
     virtual void onTouchMoved(Touch *t, Event *e);
     virtual void onTouchEnded(Touch *t, Event *e);
+    
+    virtual bool BoomtouchBegan(Touch *t, Event *e);
 
 // add enemy from here.
 public:

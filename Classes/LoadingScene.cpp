@@ -51,28 +51,38 @@ cocos2d::Scene* LoadingScene::LodingSceneCreate()
     
     // 预加载资源planelist
     SpriteFrameCache* cache = SpriteFrameCache::getInstance();
-    cache->addSpriteFramesWithFile("planelist.plist", "planelist.png");
+    cache->addSpriteFramesWithFile("planeblist.plist", "planeblist.png");
     
     // 预加载资源music
     SimpleAudioEngine::getInstance()->preloadBackgroundMusic("diqiuyi.mp3");
     SimpleAudioEngine::getInstance()->preloadEffect("bulletvoice.mp3");
 
     // 自身飞机
-    Sprite* selfplane = Sprite::create("PaperPlane.png");
+    Sprite* selfplane = Sprite::createWithSpriteFrameName("PaperPlane.png");
     selfplane->setPosition(loading_size.width/2, 0);
     selfplane->setAnchorPoint(Vec2(0.5, 0.5));
     MoveBy* selfintoscene = MoveBy::create(1, Vec2(0, loading_size.height/8));
     selfplane->runAction(selfintoscene);
     SpriteArray.pushBack(selfplane);
     // 子弹加载
-    Sprite* selfbullet = Sprite::create("bullet1.png");
+    Sprite* selfbullet = Sprite::createWithSpriteFrameName("planebullet.png");
     selfbullet->setPosition(selfplane->getPosition());
     selfbullet->setAnchorPoint(Vec2(0.5, 0.5));
+    selfbullet->setScale(0.5);
     SpriteArray.pushBack(selfbullet);
+    // 记分加载
+    Label* scoreboard = Label::createWithSystemFont("0", "Courier", 45);
+    scoreboard->setPosition(loading_size.width-100, loading_size.height-50);
+    scoreboard->setAnchorPoint(Vec2(0.5,0.5));
+    scoreboard->setSystemFontSize(45);
+    scoreboard->setTextColor(Color4B(70, 70, 70, 80));
+    SpriteArray.pushBack((Sprite*)scoreboard);
     // 敌机加载
     for (int i=0; i<10; i++) {
-        Sprite* enemytmp = Sprite::create("LXPlane.png");
-        enemytmp->setPosition(loading_size.width/2, loading_size.height+200);
+        Sprite* enemytmp = Sprite::createWithSpriteFrameName("PaperPlane_01.png");
+        // 敌机随机位置出现
+        int random_location = CCRANDOM_0_1()*loading_size.width;
+        enemytmp->setPosition(random_location, loading_size.height+200);
         enemytmp->setAnchorPoint(Vec2(0.5, 0.5));
         Sequence* enemy_action = Sequence::create(RotateBy::create(0.1, 180), MoveTo::create(3, Vec2(loading_size.width/2, loading_size.height-1200)), NULL);
         enemytmp->runAction(enemy_action);
